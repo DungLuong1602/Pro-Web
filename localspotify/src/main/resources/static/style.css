@@ -1,0 +1,193 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #121212;
+    color: #ffffff;
+    height: 100vh;
+    overflow: hidden; /* Chống cuộn toàn trang để giữ Player cố định */
+}
+
+/* Bố cục chính chia làm 2 phần: Trên (Layout) và Dưới (Player) */
+.app-layout {
+    display: flex;
+    height: calc(100vh - 90px); /* Trừ đi chiều cao của bottom-player */
+}
+
+/* Thanh bên trái */
+.sidebar {
+    width: 250px;
+    background-color: #000000;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.user-profile {
+    background-color: #282828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.highlight {
+    color: #1db954;
+    font-weight: bold;
+}
+
+.btn-logout {
+    margin-top: 10px;
+    background-color: transparent;
+    color: #b3b3b3;
+    border: 1px solid #b3b3b3;
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.btn-logout:hover {
+    color: white;
+    border-color: white;
+}
+
+.nav-menu ul {
+    list-style: none;
+}
+
+.nav-menu li {
+    padding: 10px 0;
+    color: #b3b3b3;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.nav-menu li:hover, .nav-menu li.active {
+    color: #ffffff;
+}
+
+.playlist-section {
+    margin-top: 40px;
+}
+
+.playlist-section h3 {
+    font-size: 12px;
+    color: #b3b3b3;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.btn-create-playlist {
+    margin-top: 15px;
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-create-playlist:hover {
+    color: #ffffff;
+}
+
+/* Khu vực chính ở giữa */
+.main-content {
+    flex: 1;
+    background: linear-gradient(180deg, #2a2a2a 0%, #121212 100%);
+    padding: 20px 40px;
+    overflow-y: auto; /* Cho phép cuộn danh sách bài hát */
+}
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.btn-upload {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-upload:hover {
+    transform: scale(1.05);
+}
+
+.song-card {
+    background-color: #181818;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 300px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.song-card:hover {
+    background-color: #282828;
+}
+
+.song-cover {
+    font-size: 40px;
+}
+
+/* Thanh Player cố định ở dưới */
+.bottom-player {
+    height: 90px;
+    background-color: #181818;
+    border-top: 1px solid #282828;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.now-playing {
+    width: 30%;
+}
+
+.player-controls {
+    width: 40%;
+    display: flex;
+    justify-content: center;
+}
+
+audio {
+    width: 100%;
+    max-width: 500px;
+    outline: none;
+}
+
+.player-actions {
+    width: 30%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-like {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
