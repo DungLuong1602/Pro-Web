@@ -18,9 +18,10 @@
 
             <nav class="nav-menu">
                 <ul>
-                    <li class="active">Trang chủ</li>
-                    <li>Tìm kiếm</li>
-                    <li>Thư viện của bạn</li>
+                    <li class="nav-item active" data-view="home" onclick="sidebarNavigate('home')">Trang chủ</li>
+                    <li class="nav-item" data-view="search" onclick="sidebarNavigate('search')">Tìm kiếm</li>
+                    <li class="nav-item" data-view="library" onclick="sidebarNavigate('library')">Thư viện của bạn</li>
+                    <li class="nav-item" data-view="upload" onclick="sidebarNavigate('upload')">Tải lên</li>
                 </ul>
             </nav>
 
@@ -34,20 +35,63 @@
         </aside>
 
         <main class="main-content">
-            <header class="top-header">
-                <h2>Bài hát nổi bật</h2>
-                <button class="btn-upload">Tải nhạc lên</button>
-            </header>
+            <section id="view-home" class="view-section">
+                <header class="top-header">
+                    <h2>Bài hát nổi bật</h2>
+                    <button class="btn-upload" onclick="showView('upload')">Tải nhạc lên</button>
+                </header>
 
-            <div class="song-list">
-                <div class="song-card placeholder-card">
-                    <div class="song-cover">💿</div>
-                    <div class="song-info">
-                        <h4>Chờ API từ Dev 2...</h4>
-                        <p>Artist Name</p>
+                <div class="song-list">
+                    <div class="song-card placeholder-card">
+                        <div class="song-cover">💿</div>
+                        <div class="song-info">
+                            <h4>Chờ API từ Dev 2...</h4>
+                            <p>Artist Name</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <section id="view-search" class="view-section" style="display:none;">
+                <header class="top-header">
+                    <h2>Tìm kiếm bài hát</h2>
+                </header>
+                <div class="search-box">
+                    <input id="search-input" type="text" placeholder="Tìm theo tên bài hát hoặc nghệ sĩ..." />
+                    <button onclick="performSearch()">Tìm</button>
+                </div>
+                <div id="search-results" class="song-list"></div>
+            </section>
+
+            <section id="view-library" class="view-section" style="display:none;">
+                <header class="top-header">
+                    <h2>Thư viện của bạn</h2>
+                </header>
+                <div id="library-content">
+                    <p style="color:#b3b3b3;">Bạn chưa có nội dung trong thư viện.</p>
+                </div>
+            </section>
+
+            <section id="view-upload" class="view-section" style="display:none;">
+                <header class="top-header">
+                    <h2>Tải nhạc lên</h2>
+                </header>
+                <div class="upload-form">
+                    <div class="form-group">
+                        <label for="upload-title">Tên bài hát:</label>
+                        <input id="upload-title" type="text" placeholder="Nhập tên bài hát" />
+                    </div>
+                    <div class="form-group">
+                        <label for="upload-artist">Nghệ sĩ:</label>
+                        <input id="upload-artist" type="text" placeholder="Nhập tên nghệ sĩ" />
+                    </div>
+                    <div class="form-group">
+                        <label for="file-input">Chọn tệp audio:</label>
+                        <input id="file-input" type="file" accept="audio/*" />
+                    </div>
+                    <button onclick="uploadAudio()" class="btn-upload-submit">Tải lên</button>
+                </div>
+            </section>
         </main>
     </div>
 
