@@ -5,7 +5,7 @@ public class ApiResponse<T> {
     private String message;
     private T data;
 
-    // Constructors
+    // Hàm khởi tạo
     public ApiResponse(int status, String message, T data) {
         this.status = status;
         this.message = message;
@@ -14,7 +14,7 @@ public class ApiResponse<T> {
 
     public ApiResponse() {}
 
-    // Getters and Setters
+    // Getter và Setter
     public int getStatus() { return status; }
     public void setStatus(int status) { this.status = status; }
 
