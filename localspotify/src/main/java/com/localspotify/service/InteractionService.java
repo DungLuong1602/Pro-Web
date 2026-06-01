@@ -30,7 +30,7 @@ public class InteractionService {
     @Autowired
     private SongRepository songRepository;
 
-    // Xử lý Toggle Like (Nếu thích rồi thì bỏ thích, nếu chưa thì thích)
+
     public Map<String, Object> toggleLike(Long userId, Long songId) throws Exception {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new Exception("User không hợp lệ"));

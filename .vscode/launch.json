@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-LocalspotifyApplication<localspotify>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.localspotify.LocalspotifyApplication",
+            "projectName": "localspotify",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
