@@ -23,16 +23,18 @@ async function handleLogin(event) {
     const passwordStr = document.getElementById('login-password').value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/login`, {
+        const response = await 
+        fetch('http://localhost:8080/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                username: usernameStr,
-                password: passwordStr
+                username: root,
+                password: 123456
             })
         });
+        
 
         const result = await response.json();
 
