@@ -1,5 +1,9 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
+let currentPlayingSongId = null;
+let currentSelectedPlaylistId = null;
+let allGlobalSongs = [];
+
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
 });
@@ -243,13 +247,216 @@ function playSong(songId, songTitle, songArtist) {
     audio.play().catch(err => console.error('Lỗi phát nhạc:', err));
 }
 
-// Tương tác & Playlist
-function likeSong(songId) {
-    // TODO: Implement like song functionality
-    console.log('Like song:', songId);
+// Tải danh sách playlist của người dùng
+function loadUserPlaylists(userId) {
+    fetch(`${API_BASE_URL}/playlists/user/${userId}`)
+        .then(res => res.json())
+        .then(res => {
+            const container = document.getElementById('playlist-container');
+            container.innerHTML = '';
+            const playlists = res.data || [];
+            
+            if(playlists.length === 0) {
+                container.innerHTML = '<li style="color: #b3b3b3; font-style: italic; font-size: 13px;">Chưa có playlist nào</li>';
+                return;
+            }
+
+            playlists.forEach(p => {
+                const li = document.createElement('li');
+                li.className = 'playlist-item-nav';
+                li.innerHTML = `📁 ${p.name}`;
+                li.onclick = () => openPlaylistDetail(p.id, p.name);
+                container.appendChild(li);
+            });
+        });
 }
 
-function loadUserPlaylists(userId) {
-    // TODO: Implement load playlists functionality
-    console.log('Load playlists for user:', userId);
+function handleCreatePlaylist() {
+    const name = prompt("Nhập tên Playlist mới:");
+    if (!name || !name.trim()) return;
+
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    
+    fetch(`${API_BASE_URL}/playlists/create?name=${encodeURIComponent(name.trim())}&userId=${user.id}`, {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(res => {
+        if(res.status === 200) {
+            alert('Tạo playlist thành công!');
+            loadUserPlaylists(user.id);
+        } else {
+            alert(res.message);
+        }
+    });
 }
+
+function openPlaylistDetail(playlistId, playlistName) {
+    currentSelectedPlaylistId = playlistId;
+    sidebarNavigate('library');
+    
+    document.getElementById('library-title').textContent = `Playlist: ${playlistName}`;
+    const addSongBtn = document.getElementById('btn-add-song-to-current');
+    addSongBtn.style.display = 'block';
+    addSongBtn.onclick = () => showAddSongToPlaylistModal();
+
+    fetchPlaylistSongs(playlistId);
+}
+
+function fetchPlaylistSongs(playlistId) {
+    const content = document.getElementById('library-content');
+    content.innerHTML = '<p style="color:#b3b3b3;">Đang tải bài hát trong Playlist...</p>';
+
+    // Gọi API của user để quét lại playlist cụ thể
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    fetch(`${API_BASE_URL}/playlists/user/${user.id}`)
+        .then(res => res.json())
+        .then(res => {
+            const currentP = res.data.find(p => p.id === playlistId);
+            content.innerHTML = '';
+
+            if(!currentP || !currentP.songs || currentP.songs.length === 0) {
+                content.innerHTML = '<p style="color:#b3b3b3;">Playlist này chưa có bài hát nào. Hãy thêm nhạc ngay!</p>';
+                return;
+            }
+
+            currentP.songs.forEach(song => {
+                const card = document.createElement('div');
+                card.className = 'song-card';
+                card.innerHTML = `
+                    <div class="song-cover" onclick="playSong(${song.id}, '${song.title}', '${song.artist}')">🎵</div>
+                    <div class="song-info" style="flex:1;" onclick="playSong(${song.id}, '${song.title}', '${song.artist}')">
+                        <h4>${song.title}</h4>
+                        <p>${song.artist}</p>
+                    </div>
+                `;
+                content.appendChild(card);
+            });
+        });
+}
+
+// Bổ sung Tính năng thêm bài hát vào playlist đã tạo bằng giao diện chọn nhanh
+function showAddSongToPlaylistModal() {
+    const content = document.getElementById('library-content');
+    content.innerHTML = '<h3 style="margin-bottom:15px; color:#1db954;">Chọn bài hát để thêm vào Playlist:</h3>';
+
+    if(allGlobalSongs.length === 0) {
+        content.innerHTML += '<p style="color:#b3b3b3;">Hệ thống chưa có nhạc, hãy qua thẻ Tải Lên trước.</p>';
+        return;
+    }
+
+    allGlobalSongs.forEach(song => {
+        const div = document.createElement('div');
+        div.className = 'modal-song-row';
+        div.innerHTML = `
+            <div>
+                <strong>${song.title}</strong> - <span style="color:#b3b3b3; font-size:13px;">${song.artist}</span>
+            </div>
+            <button class="btn-add-to-p" onclick="executeAddSong(${song.id})">➕ Thêm</button>
+        `;
+        content.appendChild(div);
+    });
+}
+
+function executeAddSong(songId) {
+    fetch(`${API_BASE_URL}/playlists/add-song?playlistId=${currentSelectedPlaylistId}&songId=${songId}`, {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(res => {
+        if(res.status === 200) {
+            alert('Đã thêm bài hát vào playlist!');
+            // Quay về hiển thị danh sách bài hát trong playlist
+            fetchPlaylistSongs(currentSelectedPlaylistId);
+        } else {
+            alert(res.message);
+        }
+    });
+}
+
+// Tương tác 
+// Xử lý Thích / Bỏ thích bài hát công khai
+function handleLikeToggle() {
+    if (!currentPlayingSongId) {
+        alert('Vui lòng chọn phát 1 bài nhạc trước khi tương tác thích!');
+        return;
+    }
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+
+    fetch(`${API_BASE_URL}/interactions/like?userId=${user.id}&songId=${currentPlayingSongId}`, {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.status === 200) {
+            const isLiked = res.data.liked;
+            const count = res.data.count;
+            
+            document.getElementById('player-like-btn').textContent = isLiked ? '❤️' : '🤍';
+            document.getElementById('like-count-display').textContent = `${count} Likes`;
+        }
+    });
+}
+
+// Cập nhật trạng thái Like hiển thị trên thanh Player
+function updateLikeStatusDisplay(songId) {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    // Mượn API Like để lấy trạng thái tổng số lượt tương tác hiện tại
+    fetch(`${API_BASE_URL}/interactions/like?userId=0&songId=${songId}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(res => {
+         // Đọc tổng số lượt thích từ cơ sở dữ liệu
+         const count = res.data.count;
+         document.getElementById('like-count-display').textContent = `${count} Likes`;
+         document.getElementById('player-like-btn').textContent = '🤍'; // Mặc định trạng thái toggle
+    });
+}
+
+// Tải danh sách các bình luận hiện có của bài hát lên UI
+function loadComments(songId) {
+    fetch(`${API_BASE_URL}/interactions/comments/${songId}`)
+    .then(res => res.json())
+    .then(res => {
+        const container = document.getElementById('comments-display-container');
+        container.innerHTML = '';
+        const comments = res.data || [];
+
+        if (comments.length === 0) {
+            container.innerHTML = '<p id="no-comment-text" style="color:#b3b3b3; font-style:italic; font-size:13px;">Chưa có bình luận nào cho bài hát này. Hãy là người đầu tiên bình luận!</p>';
+            return;
+        }
+
+        comments.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'comment-card';
+            card.innerHTML = `
+                <div class="comment-user">@${c.user ? c.user.username : 'Ẩn danh'}</div>
+                <div class="comment-text">${c.content}</div>
+            `;
+            container.appendChild(card);
+        });
+    });
+}
+
+// Gửi bình luận mới lên máy chủ Backend
+function submitComment() {
+    const input = document.getElementById('comment-input-field');
+    const content = input.value.trim();
+    if (!content) return;
+
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+
+    fetch(`${API_BASE_URL}/interactions/comment?userId=${user.id}&songId=${currentPlayingSongId}&content=${encodeURIComponent(content)}`, {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(res => {
+        if(res.status === 200) {
+            input.value = '';
+            loadComments(currentPlayingSongId); // Nạp lại danh sách mà không ảnh hưởng tới audio
+        } else {
+            alert(res.message);
+        }
+    });
+}
+

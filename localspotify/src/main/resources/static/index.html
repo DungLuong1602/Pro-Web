@@ -92,6 +92,15 @@
                     <button onclick="uploadAudio()" class="btn-upload-submit">Tải lên</button>
                 </div>
             </section>
+            <section class="comment-section-wrapper" id="active-comment-section" style="display: none; margin-top: 40px; border-top: 1px solid #282828; padding-top: 20px;">
+                <h3>Bình luận về bài hát: <span id="comment-song-title" class="highlight"></span></h3>
+                <div class="comment-form" style="display: flex; gap: 10px; margin: 15px 0;">
+                    <input type="text" id="comment-input-field" placeholder="Viết bình luận công khai..." style="flex: 1; padding: 10px; background: #181818; border: 1px solid #333; color: white; border-radius: 4px;">
+                    <button onclick="submitComment()" style="background: #1db954; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Gửi</button>
+                </div>
+                <div id="comments-display-container" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                </div>
+            </section>
         </main>
     </div>
 
@@ -112,6 +121,23 @@
         </div>
     </div>
 
+    <div class="bottom-player">
+        <div class="now-playing">
+            <div id="player-title">Chưa phát nhạc</div>
+            <div id="player-artist" style="font-size: 12px; color: #b3b3b3;">-</div>
+        </div>
+        
+        <div class="player-controls">
+            <audio id="main-audio" controls>
+                Trình duyệt của bạn không hỗ trợ thẻ audio.
+            </audio>
+        </div>
+
+        <div class="player-actions" style="gap: 15px; align-items: center;">
+            <span id="like-count-display" style="font-size: 14px; color: #b3b3b3; font-weight: bold;">0 Likes</span>
+            <button class="btn-like" id="player-like-btn" onclick="handleLikeToggle()">🤍</button>
+        </div>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>

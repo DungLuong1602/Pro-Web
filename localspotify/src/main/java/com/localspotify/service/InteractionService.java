@@ -54,7 +54,6 @@ public class InteractionService {
         return likeRepository.countBySongId(songId);
     }
 
-    // Xử lý bình luận
     public Comment addComment(Long userId, Long songId, String content) throws Exception {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new Exception("User không hợp lệ"));

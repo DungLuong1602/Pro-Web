@@ -26,7 +26,9 @@ public class PlaylistController {
     public ResponseEntity<ApiResponse<Playlist>> createPlaylist(@RequestParam String name, @RequestParam Long userId) {
         try {
             Playlist playlist = playlistService.createPlaylist(name, userId);
-            playlist.getUser().setPassword(null);
+            if (playlist.getUser() != null) {
+                playlist.getUser().setPassword(null);
+            }
             return ResponseEntity.ok(new ApiResponse<>(200, "Tạo playlist thành công!", playlist));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
@@ -36,18 +38,22 @@ public class PlaylistController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<List<Playlist>>> getPlaylistsByUser(@PathVariable Long userId) {
         List<Playlist> playlists = playlistService.getPlaylistsByUser(userId);
-        playlists.forEach(p -> p.getUser().setPassword(null));
-        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách playlist thành công!", playlists));
+        playlists.forEach(p -> {
+            if(p.getUser() != null) p.getUser().setPassword(null);
+        });
+        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách thành công!", playlists));
     }
 
     @PostMapping("/add-song")
     public ResponseEntity<ApiResponse<Playlist>> addSongToPlaylist(@RequestParam Long playlistId, @RequestParam Long songId) {
         try {
             Playlist playlist = playlistService.addSongToPlaylist(playlistId, songId);
-            playlist.getUser().setPassword(null);
-            return ResponseEntity.ok(new ApiResponse<>(200, "Thêm nhạc vào playlist thành công!", playlist));
+            if (playlist.getUser() != null) {
+                playlist.getUser().setPassword(null);
+            }
+            return ResponseEntity.ok(new ApiResponse<>(200, "Thêm nhạc thành công!", playlist));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
         }
     }
-}
+}   

@@ -27,7 +27,7 @@ public class InteractionController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> toggleLike(@RequestParam Long userId, @RequestParam Long songId) {
         try {
             Map<String, Object> result = interactionService.toggleLike(userId, songId);
-            return ResponseEntity.ok(new ApiResponse<>(200, "Thực hiện tương tác Like thành công!", result));
+            return ResponseEntity.ok(new ApiResponse<>(200, "Thao tác thành công", result));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
         }
@@ -37,8 +37,8 @@ public class InteractionController {
     public ResponseEntity<ApiResponse<Comment>> addComment(@RequestParam Long userId, @RequestParam Long songId, @RequestParam String content) {
         try {
             Comment comment = interactionService.addComment(userId, songId, content);
-            comment.getUser().setPassword(null);
-            return ResponseEntity.ok(new ApiResponse<>(200, "Đăng bình luận thành công!", comment));
+            if(comment.getUser() != null) comment.getUser().setPassword(null);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Bình luận thành công!", comment));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
         }
@@ -47,7 +47,9 @@ public class InteractionController {
     @GetMapping("/comments/{songId}")
     public ResponseEntity<ApiResponse<List<Comment>>> getComments(@PathVariable Long songId) {
         List<Comment> comments = interactionService.getCommentsBySong(songId);
-        comments.forEach(c -> c.getUser().setPassword(null));
-        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách bình luận thành công!", comments));
+        comments.forEach(c -> {
+            if(c.getUser() != null) c.getUser().setPassword(null);
+        });
+        return ResponseEntity.ok(new ApiResponse<>(200, "Thành công", comments));
     }
 }
