@@ -9,4 +9,5 @@ import com.localspotify.entity.Like;
 public interface LikeRepository extends JpaRepository<Like, Like.LikeId> {
     long countBySongId(Long songId);
     boolean existsById(Like.LikeId id);
+    java.util.List<Like> findByIdUserId(Long userId);
 }

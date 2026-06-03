@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.localspotify.dto.ApiResponse;
 import com.localspotify.entity.Comment;
+import com.localspotify.entity.Song;
 import com.localspotify.service.InteractionService;
 
 @RestController
@@ -51,5 +52,18 @@ public class InteractionController {
             if(c.getUser() != null) c.getUser().setPassword(null);
         });
         return ResponseEntity.ok(new ApiResponse<>(200, "Thành công", comments));
+    }
+
+    @GetMapping("/liked-songs")
+    public ResponseEntity<ApiResponse<List<Song>>> getLikedSongs(@RequestParam Long userId) {
+        try {
+            List<Song> likedSongs = interactionService.getLikedSongs(userId);
+            likedSongs.forEach(s -> {
+                if (s.getUploadedBy() != null) s.getUploadedBy().setPassword(null);
+            });
+            return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách bài hát đã thích thành công!", likedSongs));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+        }
     }
 }

@@ -48,4 +48,27 @@ public class PlaylistService {
         }
         return PlaylistRepository.save(playlist);
     }
+
+    public Playlist removeSongFromPlaylist(Long playlistId, Long songId) throws Exception {
+        Playlist playlist = PlaylistRepository.findById(playlistId)
+                .orElseThrow(() -> new Exception("Không tìm thấy Playlist!"));
+        Song song = SongRepository.findById(songId)
+                .orElseThrow(() -> new Exception("Không tìm thấy bài hát!"));
+        
+        playlist.getSongs().removeIf(existingSong -> existingSong.getId().equals(song.getId()));
+        return PlaylistRepository.save(playlist);
+    }
+
+    public Playlist updatePlaylist(Long playlistId, String name) throws Exception {
+        Playlist playlist = PlaylistRepository.findById(playlistId)
+                .orElseThrow(() -> new Exception("Không tìm thấy Playlist!"));
+        playlist.setName(name);
+        return PlaylistRepository.save(playlist);
+    }
+
+    public void deletePlaylist(Long playlistId) throws Exception {
+        Playlist playlist = PlaylistRepository.findById(playlistId)
+                .orElseThrow(() -> new Exception("Không tìm thấy Playlist!"));
+        PlaylistRepository.delete(playlist);
+    }
 }

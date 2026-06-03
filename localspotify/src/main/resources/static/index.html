@@ -20,6 +20,7 @@
                 <ul>
                     <li class="nav-item active" data-view="home" onclick="sidebarNavigate('home')">Trang chủ</li>
                     <li class="nav-item" data-view="search" onclick="sidebarNavigate('search')">Tìm kiếm</li>
+                    <li class="nav-item" data-view="liked" onclick="sidebarNavigate('liked')">Nhạc đã thích</li>
                     <li class="nav-item" data-view="library" onclick="sidebarNavigate('library')">Thư viện của bạn</li>
                     <li class="nav-item" data-view="upload" onclick="sidebarNavigate('upload')">Tải lên</li>
                 </ul>
@@ -30,7 +31,7 @@
                 <ul id="playlist-container">
                     <li style="color: #b3b3b3; font-style: italic; font-size: 13px;">Chưa có playlist nào</li>
                 </ul>
-                <button class="btn-create-playlist">+ Tạo Playlist mới</button>
+                <button class="btn-create-playlist" onclick="handleCreatePlaylist()">+ Tạo Playlist mới</button>
             </div>
         </aside>
 
@@ -65,10 +66,20 @@
 
             <section id="view-library" class="view-section" style="display:none;">
                 <header class="top-header">
-                    <h2>Thư viện của bạn</h2>
+                    <h2 id="library-title">Thư viện của bạn</h2>
+                    <button id="btn-add-song-to-current" class="btn-upload" style="display:none;" onclick="showAddSongToPlaylistModal()">+ Thêm bài hát</button>
                 </header>
                 <div id="library-content">
                     <p style="color:#b3b3b3;">Bạn chưa có nội dung trong thư viện.</p>
+                </div>
+            </section>
+
+            <section id="view-liked" class="view-section" style="display:none;">
+                <header class="top-header">
+                    <h2>Nhạc đã thích</h2>
+                </header>
+                <div id="liked-song-list" class="song-list">
+                    <p style="color:#b3b3b3;">Bạn chưa thích bài hát nào.</p>
                 </div>
             </section>
 
@@ -116,26 +127,9 @@
             </audio>
         </div>
 
-        <div class="player-actions">
-            <button class="btn-like">❤️</button>
-        </div>
-    </div>
-
-    <div class="bottom-player">
-        <div class="now-playing">
-            <div id="player-title">Chưa phát nhạc</div>
-            <div id="player-artist" style="font-size: 12px; color: #b3b3b3;">-</div>
-        </div>
-        
-        <div class="player-controls">
-            <audio id="main-audio" controls>
-                Trình duyệt của bạn không hỗ trợ thẻ audio.
-            </audio>
-        </div>
-
-        <div class="player-actions" style="gap: 15px; align-items: center;">
-            <span id="like-count-display" style="font-size: 14px; color: #b3b3b3; font-weight: bold;">0 Likes</span>
-            <button class="btn-like" id="player-like-btn" onclick="handleLikeToggle()">🤍</button>
+        <div class="player-actions" style="gap:12px;">
+            <button class="btn-rewind" onclick="rewindSong()">⏮️</button>
+            <button class="btn-skip" onclick="skipSong()">⏭️</button>
         </div>
     </div>
     <script src="app.js"></script>

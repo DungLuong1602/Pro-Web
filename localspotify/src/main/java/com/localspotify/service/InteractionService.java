@@ -50,6 +50,18 @@ public class InteractionService {
         }
     }
 
+    public List<Song> getLikedSongs(Long userId) throws Exception {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User không hợp lệ"));
+        return likeRepository.findByIdUserId(userId).stream()
+                .map(Like::getSong)
+                .toList();
+    }
+
+    public boolean isSongLikedByUser(Long userId, Long songId) {
+        return likeRepository.existsById(new Like.LikeId(userId, songId));
+    }
+
     public long getLikeCount(Long songId) {
         return likeRepository.countBySongId(songId);
     }
