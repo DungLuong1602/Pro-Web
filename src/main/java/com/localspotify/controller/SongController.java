@@ -3,6 +3,7 @@ package com.localspotify.controller;
 import java.io.File;
 import java.util.List;
 
+import com.localspotify.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.cloudinary.Cloudinary;
 import com.localspotify.dto.ApiResponse;
 import com.localspotify.entity.Song;
 import com.localspotify.entity.User;
@@ -37,6 +39,10 @@ public class SongController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private Cloudinary cloudinary;
+    @Autowired
+    private FileUploadService fileUploadService;
     /**
      * Tải lên bài hát mới
      */
@@ -51,7 +57,7 @@ public class SongController {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(400, "File is empty", null));
             }
 
-            // Lấy người dùng hiện tại (mặc định user ID 1 tạm thời)
+            // Lấy người dùng hiện tại
             User uploadedBy = null;
             if (userId != null) {
                 uploadedBy = userRepository.findById(userId).orElse(null);
@@ -60,7 +66,14 @@ public class SongController {
                 uploadedBy = userRepository.findById(1L).orElse(null);
             }
 
-            Song song = songService.uploadSong(file, title, artist, uploadedBy);
+            //1: Tải file vật lý lên Cloudinary để lấy link online
+            String onlineUrl = fileUploadService.uploadSong(file);
+
+            //2: Gọi SongService để lưu data vào bảng songs
+            // LƯU Ý: Đã đổi tham số truyền vào từ 'file' thành chuỗi 'onlineUrl'
+            // BƯỚC MỚI 2: Gọi SongService để lưu data vào bảng songs
+            Song song = songService.saveSongMetadata(title, artist, onlineUrl, file.getOriginalFilename(), file.getSize(), uploadedBy);
+            
             return ResponseEntity.ok(new ApiResponse<>(200, "Upload successful", song));
 
         } catch (IllegalArgumentException e) {
@@ -107,27 +120,24 @@ public class SongController {
     /**
      * Phát trực tuyến tệp âm thanh của bài hát
      */
+/**
+     * Phát trực tuyến tệp âm thanh của bài hát (Đã nâng cấp cho Cloudinary)
+     */
     @GetMapping("/{id}/stream")
-    public ResponseEntity<Resource> streamSong(@PathVariable Long id) {
+    public ResponseEntity<Void> streamSong(@PathVariable Long id) {
         try {
             Song song = songService.getSongById(id);
-            if (song == null) {
+            if (song == null || song.getFilePath() == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            File audioFile = new File(song.getFilePath());
-            if (!audioFile.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            // Tăng số lần nghe
+            // Vẫn giữ tính năng tăng số lần nghe cực xịn của nhóm
             songService.incrementListenCount(id);
 
-            Resource resource = new FileSystemResource(audioFile);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + song.getTitle() + ".mp3\"")
-                    .body(resource);
+            // Chuyển hướng (Redirect 302) trình duyệt/thẻ <audio> bay thẳng sang link Cloudinary để lấy nhạc
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, song.getFilePath())
+                    .build();
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

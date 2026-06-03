@@ -1,16 +1,9 @@
 package com.localspotify.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.localspotify.entity.Song;
 import com.localspotify.entity.User;
@@ -22,36 +15,25 @@ public class SongService {
     @Autowired
     private SongRepository songRepository;
 
-    @Value("${upload.dir:uploads/audio}")
-    private String uploadDir;
+    // Đã xóa biến uploadDir vì không còn lưu file local nữa
 
-    public Song uploadSong(MultipartFile file, String title, String artist, User uploadedBy) throws IOException {
-        String finalTitle = title != null && !title.trim().isEmpty() ? title.trim() : file.getOriginalFilename();
+    // Hàm mới thay thế cho uploadSong cũ - Nhận URL từ Cloudinary truyền xuống
+    public Song saveSongMetadata(String title, String artist, String fileUrl, String originalFilename, long fileSize, User uploadedBy) {
+        // Vẫn giữ nguyên logic lấy tên file mặc định cực xịn của nhóm
+        String finalTitle = title != null && !title.trim().isEmpty() ? title.trim() : originalFilename;
         String finalArtist = artist != null && !artist.trim().isEmpty() ? artist.trim() : "Unknown Artist";
 
+        // Vẫn giữ logic chặn trùng bài hát
         if (songRepository.existsByTitleIgnoreCaseAndArtistIgnoreCase(finalTitle, finalArtist)) {
             throw new IllegalArgumentException("Bài hát đã tồn tại trong hệ thống.");
         }
-
-        // Tạo thư mục upload nếu chưa tồn tại
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        // Tạo tên tệp duy nhất
-        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        Path filePath = uploadPath.resolve(filename);
-
-        // Lưu tệp
-        Files.copy(file.getInputStream(), filePath);
 
         // Tạo thực thể Song
         Song song = new Song();
         song.setTitle(finalTitle);
         song.setArtist(finalArtist);
-        song.setFilePath(filePath.toString());
-        song.setFileSize(file.getSize());
+        song.setFilePath(fileUrl); // Quan trọng: Bây giờ filePath sẽ chứa URL của Cloudinary
+        song.setFileSize(fileSize);
         song.setUploadedBy(uploadedBy);
         song.setIsPublic(true);
 
@@ -98,14 +80,11 @@ public class SongService {
         }
         return null;
     }
+    
     public void deleteSong(Long id) {
         Song song = songRepository.findById(id).orElse(null);
-        if (song != null) {
-            try {
-                Files.deleteIfExists(Paths.get(song.getFilePath()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (song != null){
+            // Đã xóa phần Files.deleteIfExists(...) vì nhạc không còn lưu ở ổ cứng local
             songRepository.deleteById(id);
         }
     }
