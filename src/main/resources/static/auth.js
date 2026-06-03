@@ -13,7 +13,7 @@ function toggleForm(formType) {
 }
 
 // Đường dẫn gốc tới Backend
-const API_BASE_URL = 'http://localhost:8080/api/auth';
+const API_BASE_URL = 'https://spotify-m4d3.onrender.com/api/auth';
 
 // 1. Xử lý Đăng Nhập
 async function handleLogin(event) {
