@@ -262,3 +262,77 @@ audio {
     font-size: 20px;
     cursor: pointer;
 }
+/* Bổ sung css cho danh sách bình luận */
+.comment-card {
+    background-color: #181818;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid #1db954;
+}
+.comment-user {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1db954;
+    margin-bottom: 4px;
+}
+.comment-text {
+    font-size: 14px;
+    color: #ffffff;
+}
+.comment-time {
+    font-size: 11px;
+    color: #727272;
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* Style cho các phần tử Playlist */
+.playlist-item-nav {
+    padding: 8px 12px;
+    color: #b3b3b3;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+.playlist-item-nav:hover {
+    background-color: #282828;
+    color: #fff;
+}
+
+.btn-create-playlist {
+    margin-top: 12px;
+    background: none;
+    border: 1px dashed #1db954;
+    color: #1db954;
+    padding: 8px;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.btn-create-playlist:hover {
+    background: #1db954;
+    color: white;
+}
+
+/* Hộp thoại thêm bài hát vào playlist */
+.modal-song-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #181818;
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+.btn-add-to-p {
+    background: #1db954;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 12px;
+}
