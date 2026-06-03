@@ -26,6 +26,13 @@ public class SongService {
     private String uploadDir;
 
     public Song uploadSong(MultipartFile file, String title, String artist, User uploadedBy) throws IOException {
+        String finalTitle = title != null && !title.trim().isEmpty() ? title.trim() : file.getOriginalFilename();
+        String finalArtist = artist != null && !artist.trim().isEmpty() ? artist.trim() : "Unknown Artist";
+
+        if (songRepository.existsByTitleIgnoreCaseAndArtistIgnoreCase(finalTitle, finalArtist)) {
+            throw new IllegalArgumentException("Bài hát đã tồn tại trong hệ thống.");
+        }
+
         // Tạo thư mục upload nếu chưa tồn tại
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
@@ -41,8 +48,8 @@ public class SongService {
 
         // Tạo thực thể Song
         Song song = new Song();
-        song.setTitle(title != null && !title.trim().isEmpty() ? title : file.getOriginalFilename());
-        song.setArtist(artist != null && !artist.trim().isEmpty() ? artist : "Unknown Artist");
+        song.setTitle(finalTitle);
+        song.setArtist(finalArtist);
         song.setFilePath(filePath.toString());
         song.setFileSize(file.getSize());
         song.setUploadedBy(uploadedBy);

@@ -11,6 +11,7 @@ import com.localspotify.entity.Song;
 public interface SongRepository extends JpaRepository<Song, Long> {
     List<Song> findByTitleContainingIgnoreCase(String title);
     List<Song> findByArtistContainingIgnoreCase(String artist);
+    boolean existsByTitleIgnoreCaseAndArtistIgnoreCase(String title, String artist);
     List<Song> findByIsPublicTrue();
     List<Song> findByUploadedByIdAndIsPublicTrue(Long userId);
     List<Song> findAll();

@@ -281,13 +281,19 @@ function uploadAudio() {
     const file = input.files[0];
     const title = titleInput.value.trim() || file.name.replace(/\.[^/.]+$/, '');
     const artist = artistInput.value.trim() || 'Unknown Artist';
-    
-    const formData = new FormData();
-formData.append('file', file);
-formData.append('title', title);
-formData.append('artist', artist);
 
-// Lấy thông tin user đang đăng nhập và gửi kèm userId
+    if (allGlobalSongs.some(song => song.title?.trim().toLowerCase() === title.toLowerCase()
+        && song.artist?.trim().toLowerCase() === artist.toLowerCase())) {
+        alert('Bài hát này đã tồn tại. Vui lòng kiểm tra lại tên và nghệ sĩ.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', title);
+    formData.append('artist', artist);
+
+    // Lấy thông tin user đang đăng nhập và gửi kèm userId
 const userStr = localStorage.getItem('currentUser');
 if (userStr) {
     const user = JSON.parse(userStr);

@@ -63,11 +63,10 @@ public class SongController {
             Song song = songService.uploadSong(file, title, artist, uploadedBy);
             return ResponseEntity.ok(new ApiResponse<>(200, "Upload successful", song));
 
-        // } catch (IOException e) {
-        //     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        //             .body(new ApiResponse<>(500, "Upload failed: " + e.getMessage(), null));
-        }catch (Exception e) { // <-- SỬA DÒNG NÀY (Đổi IOException thành Exception)
-            e.printStackTrace(); // <-- THÊM DÒNG NÀY ĐỂ IN LỖI RA MÀN HÌNH CONSOLE
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(500, "Lỗi server: " + e.getMessage(), null));
         }
