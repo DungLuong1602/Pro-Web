@@ -114,4 +114,8 @@ public class SongService {
         // 4. Xóa trong Database
         songRepository.delete(song);
     }
+
+    public List<Song> getSongsByUserId(Long userId){
+        return songRepository.findByUploadedByIdAndIsPublicTrue(userId);
+    }
 }

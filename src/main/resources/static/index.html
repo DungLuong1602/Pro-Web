@@ -22,6 +22,7 @@
                     <li class="nav-item" data-view="search" onclick="sidebarNavigate('search')">Tìm kiếm</li>
                     <li class="nav-item" data-view="liked" onclick="sidebarNavigate('liked')">Nhạc đã thích</li>
                     <li class="nav-item" data-view="library" onclick="sidebarNavigate('library')">Thư viện của bạn</li>
+                    <li class="nav-item" data-view="my-uploads" onclick="sidebarNavigate('my-uploads')">Nhạc của tôi</li>
                     <li class="nav-item" data-view="upload" onclick="sidebarNavigate('upload')">Tải lên</li>
                 </ul>
             </nav>
@@ -72,6 +73,13 @@
                 <div id="library-content">
                     <p style="color:#b3b3b3;">Bạn chưa có nội dung trong thư viện.</p>
                 </div>
+            </section>
+            <section id="view-my-uploads" class="view-section" style="display:none;">
+                <header class="top-header">
+                    <h2>Nhạc của tôi đã đăng</h2>
+                </header>
+                <div id="my-uploads-content" class="song-list">
+                    </div>
             </section>
 
             <section id="view-liked" class="view-section" style="display:none;">

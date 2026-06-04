@@ -50,9 +50,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Sidebar navigation
 function sidebarNavigate(viewId) {
-    document.querySelectorAll('.nav-menu .nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelector(`[data-view="${viewId}"]`).classList.add('active');
-    showView(viewId);
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-view') === viewId) {
+            item.classList.add('active');
+        }
+    });
+    const views = ['home', 'search', 'liked', 'library', 'upload', 'my-uploads']; 
+    
+    views.forEach(v => {
+        const element = document.getElementById('view-' + v);
+        if (element) {
+            element.style.display = (v === viewId) ? 'block' : 'none';
+        }
+    });
+    if (viewId === 'my-uploads') {
+        loadMyLibrary(); 
+    }
 }
 
 function checkAuthentication() {
@@ -896,4 +911,38 @@ function submitComment() {
     });
 }
 
+    function loadMyLibrary() {
+        const content = document.getElementById('my-uploads-content');
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!user) {
+            content.innerHTML = '<p>Bạn chưa đăng nhập.</p>';
+            return;
+        }
+
+        content.innerHTML = '<p style="color:#b3b3b3;">Đang tải nhạc của bạn...</p>';
+
+        fetch(`${API_BASE_URL}/songs/user/${user.id}/songs`)
+            .then(res => res.json())
+            .then(songs => {
+                content.innerHTML = '';
+                if (songs.length === 0) {
+                    content.innerHTML = '<p>Bạn chưa đăng bài hát nào.</p>';
+                    return;
+                }
+
+                songs.forEach(song => {
+                    // Tận dụng hàm createSongCard cũ của bạn
+                    content.appendChild(createSongCard(song, { 
+                        showActions: true, // Cho phép sửa/xóa vì là nhạc của mình
+                        showLike: true,
+                        playbackList: songs 
+                    }));
+                });
+            })
+            .catch(err => {
+                console.error('Lỗi tải thư viện:', err);
+                content.innerHTML = '<p>Lỗi tải nhạc.</p>';
+            });
+    }
 { cache: 'no-store' }

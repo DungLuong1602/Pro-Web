@@ -161,6 +161,11 @@ public class SongController {
                     .body(new ApiResponse<>(500, e.getMessage(), null));
         }
     }
+
+    @GetMapping("/my-library")
+    public ResponseEntity<List<Song>> getMySongs(@RequestParam Long userId) {
+        return ResponseEntity.ok(songService.getSongsByUserId(userId));
+    }
     /**
      * Cập nhật thông tin bài hát (Sửa tiêu đề và nghệ sĩ)
      */
@@ -198,5 +203,9 @@ public class SongController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(500, e.getMessage(), null));
         }
+    }
+    @GetMapping("/user/{userId}/songs")
+    public ResponseEntity<List<Song>> getSongsByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(songService.getSongsByUserId(userId));
     }
 }
