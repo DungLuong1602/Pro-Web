@@ -857,4 +857,4 @@ function submitComment() {
     });
 }
 
-, { cache: 'no-store' }
+{ cache: 'no-store' }
