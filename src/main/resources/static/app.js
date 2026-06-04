@@ -10,7 +10,28 @@ let currentPlaybackIndex = -1;
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
-    
+    const lastPlayed = localStorage.getItem('lastPlayedSong');
+    if (lastPlayed) {
+        const song = JSON.parse(lastPlayed);
+        // Tải thông tin lên giao diện trước
+        document.getElementById('player-title').textContent = song.title;
+        document.getElementById('player-artist').textContent = song.artist;
+        
+        // Gán src cho audio để sẵn sàng phát
+        const audio = document.getElementById('main-audio');
+        audio.src = `${API_BASE_URL}/songs/${song.id}/stream`;
+        currentPlayingSongId = song.id;
+        audio.onerror = () => {
+        console.error("Bài hát không còn tồn tại!");
+        document.getElementById('player-title').textContent = "Không tìm thấy bài hát";
+        localStorage.removeItem('lastPlayedSong'); // Xóa bài đã xóa khỏi cache
+    };
+    }
+    const savedList = localStorage.getItem('currentPlaybackList');
+    if (savedList) {
+        currentPlaybackList = JSON.parse(savedList); // Khôi phục lại list để nút Next/Prev hoạt động
+        currentPlaybackIndex = currentPlaybackList.findIndex(s => s.id === currentPlayingSongId);
+    }
     const audio = document.getElementById('main-audio');
     if (audio) {
         audio.addEventListener('ended', playNextSong);
@@ -438,6 +459,12 @@ function playSong(songId, songTitle, songArtist, playbackList = null) {
     audio.src = `${API_BASE_URL}/songs/${songId}/stream`;
     document.getElementById('player-title').textContent = songTitle || 'Untitled';
     document.getElementById('player-artist').textContent = songArtist || 'Unknown Artist';
+    localStorage.setItem('lastPlayedSong', JSON.stringify({
+        id: songId,
+        title: songTitle,
+        artist: songArtist
+    }));
+    localStorage.setItem('currentPlaybackList', JSON.stringify(currentPlaybackList)); // Lưu list
     audio.play().catch(err => console.error('Lỗi phát nhạc:', err));
 }
 
