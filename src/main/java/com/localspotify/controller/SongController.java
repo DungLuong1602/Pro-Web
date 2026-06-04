@@ -161,6 +161,11 @@ public class SongController {
                     .body(new ApiResponse<>(500, e.getMessage(), null));
         }
     }
+
+    @GetMapping("/my-library")
+    public ResponseEntity<List<Song>> getMySongs(@RequestParam Long userId) {
+        return ResponseEntity.ok(songService.getSongsByUserId(userId));
+    }
     /**
      * Cập nhật thông tin bài hát (Sửa tiêu đề và nghệ sĩ)
      */
@@ -168,7 +173,8 @@ public class SongController {
     public ResponseEntity<ApiResponse<Song>> updateSong(
             @PathVariable Long id,
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "artist", required = false) String artist) {
+            @RequestParam(value = "artist", required = false) String artist,
+            @RequestParam(required = false) MultipartFile file){
         try {
             Song updatedSong = songService.updateSong(id, title, artist);
             if (updatedSong == null) {
@@ -185,13 +191,21 @@ public class SongController {
      * Xóa bài hát
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteSong(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> deleteSong(@PathVariable Long id,@RequestParam Long userId) {
         try {
-            songService.deleteSong(id);
+            songService.deleteSong(id, userId);
             return ResponseEntity.ok(new ApiResponse<>(200, "Song deleted successfully", "Success"));
-        } catch (Exception e) {
+        } 
+        catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(403, e.getMessage(), null));
+        }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(500, e.getMessage(), null));
         }
+    }
+    @GetMapping("/user/{userId}/songs")
+    public ResponseEntity<List<Song>> getSongsByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(songService.getSongsByUserId(userId));
     }
 }

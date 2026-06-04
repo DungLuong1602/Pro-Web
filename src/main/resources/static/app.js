@@ -10,7 +10,28 @@ let currentPlaybackIndex = -1;
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
-    
+    const lastPlayed = localStorage.getItem('lastPlayedSong');
+    if (lastPlayed) {
+        const song = JSON.parse(lastPlayed);
+        // Tải thông tin lên giao diện trước
+        document.getElementById('player-title').textContent = song.title;
+        document.getElementById('player-artist').textContent = song.artist;
+        
+        // Gán src cho audio để sẵn sàng phát
+        const audio = document.getElementById('main-audio');
+        audio.src = `${API_BASE_URL}/songs/${song.id}/stream`;
+        currentPlayingSongId = song.id;
+        audio.onerror = () => {
+        console.error("Bài hát không còn tồn tại!");
+        document.getElementById('player-title').textContent = "Không tìm thấy bài hát";
+        localStorage.removeItem('lastPlayedSong'); // Xóa bài đã xóa khỏi cache
+    };
+    }
+    const savedList = localStorage.getItem('currentPlaybackList');
+    if (savedList) {
+        currentPlaybackList = JSON.parse(savedList); // Khôi phục lại list để nút Next/Prev hoạt động
+        currentPlaybackIndex = currentPlaybackList.findIndex(s => s.id === currentPlayingSongId);
+    }
     const audio = document.getElementById('main-audio');
     if (audio) {
         audio.addEventListener('ended', playNextSong);
@@ -29,9 +50,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Sidebar navigation
 function sidebarNavigate(viewId) {
-    document.querySelectorAll('.nav-menu .nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelector(`[data-view="${viewId}"]`).classList.add('active');
-    showView(viewId);
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-view') === viewId) {
+            item.classList.add('active');
+        }
+    });
+    const views = ['home', 'search', 'liked', 'library', 'upload', 'my-uploads']; 
+    
+    views.forEach(v => {
+        const element = document.getElementById('view-' + v);
+        if (element) {
+            element.style.display = (v === viewId) ? 'block' : 'none';
+        }
+    });
+    if (viewId === 'my-uploads') {
+        loadMyLibrary(); 
+    }
 }
 
 function checkAuthentication() {
@@ -359,60 +395,72 @@ function loadAllSongs() {
 //Chức năng Sửa bài hát bằng hộp thoại Prompt nhanh chóng
 function editSong(songId, currentTitle, currentArtist) {
     const newTitle = prompt("Nhập tên bài hát mới:", currentTitle);
-    if (newTitle === null) return; // Người dùng hủy bỏ
+    if (newTitle === null) return;
     
     const newArtist = prompt("Nhập tên nghệ sĩ mới:", currentArtist);
-    if (newArtist === null) return; // Người dùng hủy bỏ
+    if (newArtist === null) return;
 
-    if (!newTitle.trim()) {
-        alert("Tên bài hát không được để trống!");
-        return;
-    }
+    // Cho phép người dùng chọn file mới
+    const fileInput = document.getElementById('edit-file-input');
+    fileInput.value = '';
+    
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        
+        const formData = new FormData();
+        formData.append('title', newTitle.trim());
+        formData.append('artist', newArtist.trim());
+        
+        // Chỉ append file nếu người dùng thực sự chọn file mới
+        if (file) {
+            formData.append('file', file);
+        }
 
-    const formData = new FormData();
-    formData.append('title', newTitle.trim());
-    formData.append('artist', newArtist.trim());
+        fetch(`${API_BASE_URL}/songs/${songId}`, {
+            method: 'PUT',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert('Cập nhật thành công!');
+            loadAllSongs();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Lỗi cập nhật!');
+        });
+    };
 
-    fetch(`${API_BASE_URL}/songs/${songId}`, {
-        method: 'PUT',
-        body: formData
-    })
-    .then(res => {
-        if (!res.ok) throw new Error(`Cập nhật thất bại: ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        alert('Cập nhật thông tin bài hát thành công!');
-        loadAllSongs(); // Tải lại danh sách bài hát mới cập nhật
-    })
-    .catch(err => {
-        console.error('Lỗi cập nhật bài hát:', err);
-        alert('Lỗi: ' + err.message);
-    });
+    // Bật cửa sổ chọn file
+    fileInput.click();
 }
 
-// Chức năng Xóa bài hát khỏi hệ thống và ổ đĩa
-function deleteSong(songId) {
-    if (!confirm('Bạn có chắc chắn muốn xóa bài hát này không? Tệp âm thanh trên máy chủ cũng sẽ bị xóa.')) {
-        return;
-    }
 
-    fetch(`${API_BASE_URL}/songs/${songId}`, {
-        method: 'DELETE'
-    })
-    .then(res => {
-        if (!res.ok) throw new Error(`Xóa bài hát thất bại: ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        alert('Xóa bài hát thành công!');
-        loadAllSongs(); // Tải lại danh sách sau khi xóa
-    })
-    .catch(err => {
-        console.error('Lỗi xóa bài hát:', err);
-        alert('Lỗi: ' + err.message);
-    });
-}
+    function deleteSong(songId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa không?')) return;
+
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        const userId = user.id;
+
+        fetch(`${API_BASE_URL}/songs/${songId}?userId=${userId}`, {
+            method: 'DELETE'
+        })
+        .then(async res => {
+            const data = await res.json(); 
+            if (!res.ok) {
+                throw new Error(data.message || 'Có lỗi xảy ra');
+            }
+            return data;
+        })
+        .then(data => {
+            alert('Xóa thành công!');
+            loadAllSongs();
+        })
+        .catch(err => {
+            console.error('Lỗi:', err);
+            alert('Lỗi: ' + err.message); 
+        });
+    }
 
 function setCurrentPlaybackList(songArray) {
     currentPlaybackList = songArray ? songArray.slice() : [];
@@ -438,6 +486,12 @@ function playSong(songId, songTitle, songArtist, playbackList = null) {
     audio.src = `${API_BASE_URL}/songs/${songId}/stream`;
     document.getElementById('player-title').textContent = songTitle || 'Untitled';
     document.getElementById('player-artist').textContent = songArtist || 'Unknown Artist';
+    localStorage.setItem('lastPlayedSong', JSON.stringify({
+        id: songId,
+        title: songTitle,
+        artist: songArtist
+    }));
+    localStorage.setItem('currentPlaybackList', JSON.stringify(currentPlaybackList)); // Lưu list
     audio.play().catch(err => console.error('Lỗi phát nhạc:', err));
 }
 
@@ -477,11 +531,15 @@ function rewindSong() {
 
 // Tải danh sách playlist của người dùng
 function loadUserPlaylists(userId) {
-    fetch(`${API_BASE_URL}/playlists/user/${userId}`)
+    fetch(`${API_BASE_URL}/playlists/user/${userId}`, { cache: 'no-store' })
         .then(res => res.json())
         .then(res => {
             const container = document.getElementById('playlist-container');
             container.innerHTML = '';
+            if (!container) {
+                console.error("Lỗi UI: Không tìm thấy thẻ HTML nào có id là 'playlist-container'");
+                return; // Chặn lỗi JS nếu sai ID
+            }
             const playlists = res.data || [];
             
             if(playlists.length === 0) {
@@ -853,3 +911,38 @@ function submitComment() {
     });
 }
 
+    function loadMyLibrary() {
+        const content = document.getElementById('my-uploads-content');
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!user) {
+            content.innerHTML = '<p>Bạn chưa đăng nhập.</p>';
+            return;
+        }
+
+        content.innerHTML = '<p style="color:#b3b3b3;">Đang tải nhạc của bạn...</p>';
+
+        fetch(`${API_BASE_URL}/songs/user/${user.id}/songs`)
+            .then(res => res.json())
+            .then(songs => {
+                content.innerHTML = '';
+                if (songs.length === 0) {
+                    content.innerHTML = '<p>Bạn chưa đăng bài hát nào.</p>';
+                    return;
+                }
+
+                songs.forEach(song => {
+                    // Tận dụng hàm createSongCard cũ của bạn
+                    content.appendChild(createSongCard(song, { 
+                        showActions: true, // Cho phép sửa/xóa vì là nhạc của mình
+                        showLike: true,
+                        playbackList: songs 
+                    }));
+                });
+            })
+            .catch(err => {
+                console.error('Lỗi tải thư viện:', err);
+                content.innerHTML = '<p>Lỗi tải nhạc.</p>';
+            });
+    }
+{ cache: 'no-store' }
