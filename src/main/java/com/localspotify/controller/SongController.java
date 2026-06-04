@@ -190,7 +190,11 @@ public class SongController {
         try {
             songService.deleteSong(id, userId);
             return ResponseEntity.ok(new ApiResponse<>(200, "Song deleted successfully", "Success"));
-        } catch (Exception e) {
+        } 
+        catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(403, e.getMessage(), null));
+        }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(500, e.getMessage(), null));
         }

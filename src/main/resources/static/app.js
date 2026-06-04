@@ -420,28 +420,32 @@ function editSong(songId, currentTitle, currentArtist) {
     fileInput.click();
 }
 
-// Chức năng Xóa bài hát khỏi hệ thống và ổ đĩa
-function deleteSong(songId) {
-    if (!confirm('Bạn có chắc chắn muốn xóa bài hát này không? Tệp âm thanh trên máy chủ cũng sẽ bị xóa.')) {
-        return;
-    }
 
-    fetch(`${API_BASE_URL}/songs/${songId}`, {
-        method: 'DELETE'
-    })
-    .then(res => {
-        if (!res.ok) throw new Error(`Xóa bài hát thất bại: ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        alert('Xóa bài hát thành công!');
-        loadAllSongs(); // Tải lại danh sách sau khi xóa
-    })
-    .catch(err => {
-        console.error('Lỗi xóa bài hát:', err);
-        alert('Lỗi: ' + err.message);
-    });
-}
+    function deleteSong(songId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa không?')) return;
+
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        const userId = user.id;
+
+        fetch(`${API_BASE_URL}/songs/${songId}?userId=${userId}`, {
+            method: 'DELETE'
+        })
+        .then(async res => {
+            const data = await res.json(); 
+            if (!res.ok) {
+                throw new Error(data.message || 'Có lỗi xảy ra');
+            }
+            return data;
+        })
+        .then(data => {
+            alert('Xóa thành công!');
+            loadAllSongs();
+        })
+        .catch(err => {
+            console.error('Lỗi:', err);
+            alert('Lỗi: ' + err.message); 
+        });
+    }
 
 function setCurrentPlaybackList(songArray) {
     currentPlaybackList = songArray ? songArray.slice() : [];
