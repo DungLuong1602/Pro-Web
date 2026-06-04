@@ -380,36 +380,44 @@ function loadAllSongs() {
 //Chức năng Sửa bài hát bằng hộp thoại Prompt nhanh chóng
 function editSong(songId, currentTitle, currentArtist) {
     const newTitle = prompt("Nhập tên bài hát mới:", currentTitle);
-    if (newTitle === null) return; // Người dùng hủy bỏ
+    if (newTitle === null) return;
     
     const newArtist = prompt("Nhập tên nghệ sĩ mới:", currentArtist);
-    if (newArtist === null) return; // Người dùng hủy bỏ
+    if (newArtist === null) return;
 
-    if (!newTitle.trim()) {
-        alert("Tên bài hát không được để trống!");
-        return;
-    }
+    // Cho phép người dùng chọn file mới
+    const fileInput = document.getElementById('edit-file-input');
+    fileInput.value = '';
+    
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        
+        const formData = new FormData();
+        formData.append('title', newTitle.trim());
+        formData.append('artist', newArtist.trim());
+        
+        // Chỉ append file nếu người dùng thực sự chọn file mới
+        if (file) {
+            formData.append('file', file);
+        }
 
-    const formData = new FormData();
-    formData.append('title', newTitle.trim());
-    formData.append('artist', newArtist.trim());
+        fetch(`${API_BASE_URL}/songs/${songId}`, {
+            method: 'PUT',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert('Cập nhật thành công!');
+            loadAllSongs();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Lỗi cập nhật!');
+        });
+    };
 
-    fetch(`${API_BASE_URL}/songs/${songId}`, {
-        method: 'PUT',
-        body: formData
-    })
-    .then(res => {
-        if (!res.ok) throw new Error(`Cập nhật thất bại: ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        alert('Cập nhật thông tin bài hát thành công!');
-        loadAllSongs(); // Tải lại danh sách bài hát mới cập nhật
-    })
-    .catch(err => {
-        console.error('Lỗi cập nhật bài hát:', err);
-        alert('Lỗi: ' + err.message);
-    });
+    // Bật cửa sổ chọn file
+    fileInput.click();
 }
 
 // Chức năng Xóa bài hát khỏi hệ thống và ổ đĩa

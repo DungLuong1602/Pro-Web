@@ -168,7 +168,8 @@ public class SongController {
     public ResponseEntity<ApiResponse<Song>> updateSong(
             @PathVariable Long id,
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "artist", required = false) String artist) {
+            @RequestParam(value = "artist", required = false) String artist,
+            @RequestParam(required = false) MultipartFile file){
         try {
             Song updatedSong = songService.updateSong(id, title, artist);
             if (updatedSong == null) {
