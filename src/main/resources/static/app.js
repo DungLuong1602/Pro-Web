@@ -477,11 +477,15 @@ function rewindSong() {
 
 // Tải danh sách playlist của người dùng
 function loadUserPlaylists(userId) {
-    fetch(`${API_BASE_URL}/playlists/user/${userId}`)
+    fetch(`${API_BASE_URL}/playlists/user/${userId}`, { cache: 'no-store' })
         .then(res => res.json())
         .then(res => {
             const container = document.getElementById('playlist-container');
             container.innerHTML = '';
+            if (!container) {
+                console.error("Lỗi UI: Không tìm thấy thẻ HTML nào có id là 'playlist-container'");
+                return; // Chặn lỗi JS nếu sai ID
+            }
             const playlists = res.data || [];
             
             if(playlists.length === 0) {
@@ -853,3 +857,4 @@ function submitComment() {
     });
 }
 
+, { cache: 'no-store' }
