@@ -2,6 +2,7 @@ package com.localspotify.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -11,6 +12,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToMany(mappedBy = "uploader", cascade = CascadeType.ALL)
+    private List<Song> uploadedSongs;
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 

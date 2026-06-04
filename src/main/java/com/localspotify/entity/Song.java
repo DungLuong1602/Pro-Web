@@ -42,6 +42,9 @@ public class Song {
     @JoinColumn(name = "uploaded_id")
     private User uploadedBy;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id") 
+    private User uploader;
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

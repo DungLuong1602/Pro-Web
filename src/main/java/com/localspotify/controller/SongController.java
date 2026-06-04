@@ -186,9 +186,9 @@ public class SongController {
      * Xóa bài hát
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteSong(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> deleteSong(@PathVariable Long id,@RequestParam Long userId) {
         try {
-            songService.deleteSong(id);
+            songService.deleteSong(id, userId);
             return ResponseEntity.ok(new ApiResponse<>(200, "Song deleted successfully", "Success"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

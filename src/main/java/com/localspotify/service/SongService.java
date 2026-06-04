@@ -14,7 +14,8 @@ public class SongService {
 
     @Autowired
     private SongRepository songRepository;
-
+    @Autowired
+    private FileUploadService fileUploadService;
     // Đã xóa biến uploadDir vì không còn lưu file local nữa
 
     // Hàm mới thay thế cho uploadSong cũ - Nhận URL từ Cloudinary truyền xuống
@@ -81,11 +82,28 @@ public class SongService {
         return null;
     }
     
-    public void deleteSong(Long id) {
+    public void deleteSong(Long id,Long userId) {
         Song song = songRepository.findById(id).orElse(null);
-        if (song != null){
-            // Đã xóa phần Files.deleteIfExists(...) vì nhạc không còn lưu ở ổ cứng local
-            songRepository.deleteById(id);
+    
+        if (song != null) {
+            // 2. Kiểm tra quyền sở hữu: 
+            // Chỉ cho phép xóa nếu ID người đăng (uploadedBy) khớp với ID người thực hiện xóa (userId)
+            if (!song.getUploadedBy().getId().equals(userId)) {
+                throw new RuntimeException("Bạn không có quyền xóa bài hát này!");
+            }
+
+            // 3. Dọn dẹp trên Cloud (Xóa file trên Cloudinary)
+            // Lưu ý: Bạn cần tạo method 'deleteFile' trong FileUploadService của bạn
+            try {
+                fileUploadService.deleteFile(song.getFilePath()); 
+            } catch (Exception e) {
+                System.err.println("Lỗi khi xóa file trên Cloudinary: " + e.getMessage());
+            }
+
+            // 4. Xóa trong Database
+            songRepository.delete(song);
+        } else {
+            throw new RuntimeException("Bài hát không tồn tại.");
         }
     }
 }
