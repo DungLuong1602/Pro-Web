@@ -3,7 +3,7 @@
 
 ## 1. Project Title and Description
 **Local Spotify** is a lightweight, self-hosted music streaming web application. It empowers users to securely upload, manage, and stream their personal `.mp3` audio collections over a local network without relying on external internet connectivity or paid cloud subscriptions. The platform features seamless background playback using a Single Page Application (SPA) architecture, custom playlist curation, and social interactions like commenting and liking songs.
-
+**Link Website: https://spotify-m4d3.onrender.com
 ## 2. Team Members and Roles
 This project was developed for the Web Application Development course by the following team members:
 * **Nguyễn Nhật Nam** - Team Leader (Full-stack Development & Architecture)
